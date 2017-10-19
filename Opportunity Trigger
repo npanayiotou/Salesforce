@@ -1,0 +1,259 @@
+//.....
+//Please refer to Apex Class PostBreakStatus https://cs88.salesforce.com/01p9E000000EJw3.
+//I have created a public variable and set its value to true. In my code i gave an if statment and checks, if its true it executes the code and then chnages it to false
+//blocking the re-execution of the code. More testing needed.
+//.....
+//--------------------------------Opportunity Record Types--------------------------------
+//NewBusiness = Sandbox - 0129E0000008hTW  
+//              Production - 012240000002rmG
+//RecordType.Name = "New Business"
+//----------------------------------------------------------------
+//NewBusinessPB = Sandbox - 0129E0000008hUP
+//                Production - 012240000002rmH
+//RecordType.Name = "New Business Post Break"
+//----------------------------------------------------------------
+//Renewal = Sandbox - 0129E0000008hUA
+//          Production - 012240000002rmI
+//RecordType.Name = "Renewal"
+//----------------------------------------------------------------
+//RenewalPB = Sandbox - 0129E0000008mTC
+//            Production - 012240000002rmJ
+//RecordType.Name = "Renewal Post Break"
+//----------------------------------------------------------------
+//Upsell = Sandbox - 0129E0000008hUF
+//         Production - 012240000002rmL
+//RecordType.Name = "Upsell"
+//----------------------------------------------------------------
+//POC/Trail = Sandbox - 0129E0000008idX
+//            Production - 012240000002rmK
+//RecordType.Name = "Trial Opportunity"
+//----------------------------------------------------------------
+
+trigger OpportunityTrigger on Opportunity (before insert, before update) {
+List<Opportunity> listOppor = new List<Opportunity>();
+  for(Opportunity opp : Trigger.new){
+
+    if(PostBreakStatus.PBFirstRun){
+
+        Id NB = Schema.SObjectType.Opportunity.getRecordTypeInfosByName().get('New Business').getRecordTypeId();
+        Id NBPB = Schema.SObjectType.Opportunity.getRecordTypeInfosByName().get('New Business Post Break').getRecordTypeId();
+        Id RE = Schema.SObjectType.Opportunity.getRecordTypeInfosByName().get('Renewal').getRecordTypeId();
+        Id REPB = Schema.SObjectType.Opportunity.getRecordTypeInfosByName().get('Renewal Post Break').getRecordTypeId();
+        Id UP = Schema.SObjectType.Opportunity.getRecordTypeInfosByName().get('Upsell').getRecordTypeId();
+        Id PT = Schema.SObjectType.Opportunity.getRecordTypeInfosByName().get('Trial Opportunity').getRecordTypeId();
+        Id QO = Schema.SObjectType.Quote.getRecordTypeInfosByName().get('Standard Quote').getRecordTypeId();
+
+
+      if(opp.RecordTypeId == NB || opp.RecordTypeId == NBPB || opp.RecordTypeId == RE || opp.RecordTypeId == REPB || opp.RecordTypeId == UP || opp.RecordTypeId == PT){
+            
+        if(opp.StageName == 'Closed Won' && opp.Opportunity_Lock__c == False){
+
+                    Date tempDate;
+                    Decimal tempAmount;
+                    Decimal tempAmount2;
+              
+                    PostBreakStatus.PBFirstRun=false;
+                    Opportunity oppNew = new Opportunity();
+
+                     Account theAcc = [SELECT  PlatformA__c, Agency__c, Churn_Risk__c, Australian_Business_Number_ABN__c, Acc_Billing_Cycle__c,Account_Is_Sales_Tax_applicable__c,Account_Is_a_Purchase_Order_PO_required__c,Affiliate_Network__c,Amount__c, AnnualRevenue, Break_Exit_End_Date__c,
+                                      Break_Exit_Start_Date__c, Website, Contract_End_Date__c, Contract_Notice_Expiration_Date__c, Contract_Start_Date__c, Current_Status__c, Custom_Type__c, Dual_Affilate__c, Opportunity_Re_engagement_Date__c,
+                                      Payment_Method__c, Post_Break_ACV__c, Pre_Break_ACV__c, Annual_Contract_Value__c, VAT_Number__c,  Company_Number__c,  Registered_Company_Name__c, BillingCity, BillingCountry, BillingStateCode, BillingState, BillingStreet
+                                      FROM Account WHERE id =: opp.AccountId];
+                    
+
+
+                    theAcc.PlatformA__c = opp.Platform__c;
+                    theAcc.Agency__c = opp.Agency__c;
+                    theAcc.Acc_Billing_Cycle__c = opp.Billing_Cycle__c;
+                    theAcc.Account_Is_Sales_Tax_applicable__c = opp.Opp_Is_Sales_Tax_applicable__c;
+                    theAcc.Account_Is_a_Purchase_Order_PO_required__c = opp.Opp_Is_a_Purchase_Order_PO_required__c;
+                    theAcc.Affiliate_Network__c = opp.Affiliate_Network__c;
+                    theAcc.Amount__c = opp.Amount;
+                    theAcc.AnnualRevenue = opp.Annual_Contract_Value_04_17__c;
+                    theAcc.Break_Exit_End_Date__c = opp.Break_Exit_End_Date_04_17__c;
+                    theAcc.Break_Exit_Start_Date__c = opp.Break_Exit_Start_Date_04_17__c;
+                    theAcc.Contract_End_Date__c = opp.Contract_End_Date_04_17__c;
+                    theAcc.Contract_Notice_Expiration_Date__c = opp.Contract_Notice_Expiration_Date__c;
+                    theAcc.Contract_Start_Date__c = opp.Contract_Start_Date__c;
+                    theAcc.Current_Status__c = 'Live';
+                    theAcc.Custom_Type__c = opp.Custom_Type__c;
+                    theAcc.Dual_Affilate__c = opp.Dual_Affiliate_05_17__c;
+                    theAcc.Opportunity_Re_engagement_Date__c = opp.Re_engagement_Date__c;
+                    theAcc.Payment_Method__c = opp.Payment_Method__c;
+                    theAcc.Post_Break_ACV__c = opp.Post_Break_ACV_04_17__c;
+                    theAcc.Pre_Break_ACV__c = opp.Pre_Break_ACV_04_17__c;
+                     System.debug('@@@ Contract Value: '+opp.Annual_Contract_Value_04_17__c);
+                    theAcc.Annual_Contract_Value__c = opp.Annual_Contract_Value_04_17__c;
+                    update theAcc;
+                    System.debug('@@@ Test : '+theAcc);
+
+                  
+                  
+
+                                  if(opp.Break_Exit_Start_Date_04_17__c == NULL || opp.RecordTypeId == NBPB || opp.RecordTypeId == REPB){
+
+                                        //PostBreakStatus.PBFirstRun=false;
+                                        //Opportunity oppNew = new Opportunity();
+                                        System.debug('Create Renewal');
+                                        oppNew.RecordTypeId = RE;
+                                        
+                                        if (opp.Name.contains('RE - ')){
+                                            oppNew.Name = opp.Name;
+                                        } 
+                                        else {
+                                            oppNew.Name = 'RE - ' + opp.Name;
+                                        }
+
+                                        if(opp.RecordTypeId == NBPB || opp.RecordTypeId == REPB){
+                                          tempAmount = (opp.Post_Break_Total_Sales_Price_04_17__c / opp.Post_Break_Length_Months_04_17__c) * 12;
+                                          tempAmount2 = (opp.Pre_Break_ACV_04_17__c + opp.Post_Break_Total_Sales_Price_04_17__c);
+
+                                          //tempAmount = ((opp.Related_Opp_Amount__c / opp.Contract_Length_04_17__c) * 12); --------- Change to just Amount
+                                          //oppNew.Related_Opp_Amount__c = ((opp.Related_Opp_Amount__c / opp.Contract_Length_04_17__c) * 12);
+                                        }
+
+                                        if(opp.RecordTypeId == NB || opp.RecordTypeId == RE){
+                                           tempAmount = ((opp.Amount/opp.Contract_Length_04_17__c) *12);
+                                           tempAmount2 = opp.Amount;
+                                           //tempAmount =  ((opp.Amount / opp.Contract_Length_04_17__c) * 12); --------- Change to just Amount
+                                            //oppNew.Related_Opp_Amount__c = ((opp.Amount / opp.Contract_Length_04_17__c) * 12);
+                                        }
+
+                                        oppNew.CloseDate = opp.Contract_End_Date_04_17__c;
+                                        oppNew.Contract_Start_Date__c = opp.Contract_End_Date_04_17__c.addDays(1);
+                                        oppNew.Churn_Risk__c = theAcc.Churn_Risk__c;
+                                        //oppNew.Existing_Annual_Contract_Value__c = oppNew.Related_Opp_Amount__c;
+                                        oppNew.Existing_Annual_Contract_Value__c = tempAmount;
+                                        oppNew.Related_Opp_Amount__c = tempAmount;
+                                        oppNew.Existing_Contract_End_Date__c = opp.Contract_End_Date_04_17__c;
+                                        oppNew.Existing_Contract_Expiration_Date__c = opp.Contract_Notice_Expiration_Date__c;
+                                        oppNew.Existing_Contract_Start_Date__c = opp.Contract_Start_Date__c;
+                                        oppNew.Existing_Full_Contract_Value__c = tempAmount2;
+                                        tempDate = oppTriggers.checkLeapYear(oppNew.Contract_Start_Date__c); 
+                                        oppNew.Contract_End_Date_04_17__c = tempDate;  
+                                        //tempDate=oppNew.Contract_Start_Date__c.addYears(1);
+                                        //oppNew.Contract_End_Date_04_17__c = tempDate.addDays(-1);
+                                        //listOppor.add(oppNew);
+                                        //insert oppNew;
+                                  }
+
+                                  if (opp.RecordTypeId != NBPB || opp.RecordTypeId != REPB){
+                                  if(opp.Break_Exit_Start_Date_04_17__c != NULL && opp.Break_Exit_End_Date_04_17__c != NULL){
+
+                                      //PostBreakStatus.PBFirstRun=false;
+                                      //Opportunity oppNew = new Opportunity();
+
+                                                                            
+                                      if (opp.RecordTypeId == NB){
+                                          oppNew.RecordTypeId = NBPB;
+                                        
+                                          if (opp.Name.contains('NBP - ')){
+                                              oppNew.Name = opp.Name;
+                                          } 
+                                          else {
+                                              oppNew.Name = 'NBP - ' + opp.Name;
+                                          }
+                                      }
+
+                                      if(opp.RecordTypeId == RE){
+                                         oppNew.RecordTypeId = REPB;
+                                                                                
+                                         if (opp.Name.contains('REP - ')){
+                                             oppNew.Name = opp.Name;
+                                         } 
+                                         else {
+                                             oppNew.Name = 'REP - ' + opp.Name;
+                                         }
+                                      }
+
+                                    
+
+                                      oppNew.Contract_Start_Date__c = opp.Contract_Start_Date__c;
+                                      oppNew.Contract_End_Date_04_17__c = opp.Contract_End_Date_04_17__c;
+                                      tempDate = opp.Contract_End_Date_04_17__c;
+                                      oppNew.Pre_Break_ACV_04_17__c = opp.Pre_Break_ACV_04_17__c;
+                                      oppNew.Break_Exit_End_Date_04_17__c = opp.Break_Exit_End_Date_04_17__c;
+                                      oppNew.Break_Exit_Start_Date_04_17__c = opp.Break_Exit_Start_Date_04_17__c;
+                                      oppNew.CloseDate = opp.Break_Exit_End_Date_04_17__c;
+                                      oppNew.Related_Opp_Amount__c = opp.Amount;
+                                      //oppNew.Related_Opp_Amount__c = ((opp.Amount / opp.Contract_Length_04_17__c) * 12); --------- Change to just Amount
+                                      //listOppor.add(oppNew);
+                                      //insert oppNew;
+
+                                  }
+                                }
+
+                                 
+
+                                          
+                                          oppNew.AccountId = opp.AccountId;
+                                          oppNew.Website_URL__c = opp.Website_URL__c;
+                                          oppNew.StageName = 'Stage 0 - Experience';
+                                          oppNew.ForecastCategoryName = 'Pipeline';
+                                          oppNew.RelatedOpportunity__c = opp.Id;
+                                          oppNew.Payment_Method__c = opp.Payment_Method__c;
+                                          oppNew.Billing_Currency__c = opp.Billing_Currency__c;
+                                          oppNew.CurrencyIsoCode = opp.CurrencyIsoCode;
+                                          oppNew.Platform__c = theAcc.PlatformA__c;
+                                          oppNew.Agency__c = theAcc.Agency__c;
+                                          oppNew.Billing_Cycle__c = theAcc.Acc_Billing_Cycle__c;
+                                          oppNew.Opp_Is_Sales_Tax_applicable__c = theAcc.Account_Is_Sales_Tax_applicable__c;
+                                          oppNew.Opp_Is_a_Purchase_Order_PO_required__c = theAcc.Account_Is_a_Purchase_Order_PO_required__c;
+                                          oppNew.Custom_Type__c = opp.Custom_Type__c;
+                                          oppNew.Dual_Affiliate_05_17__c = opp.Dual_Affiliate_05_17__c;
+                                          oppNew.Affiliate_Network__c = opp.Affiliate_Network__c;
+                                          
+                                          if (opp.Auto_Renewal__c == 'YES'){
+                                            oppNew.GeneratedByAutoRenewal__c = true;
+                                            oppNew.Auto_Renewal__c = 'YES';
+                                          }
+                                          else {
+                                            oppNew.GeneratedByAutoRenewal__c = false;
+                                            oppNew.Auto_Renewal__c = 'NO';
+                                          }
+                                          oppNew.Contract_Notice_Expiration_Date__c = opp.Contract_End_Date_04_17__c.addDays(-30);
+                                          oppNew.LeadSource = opp.LeadSource;
+                                          oppNew.Client_Tier__c = opp.Client_Tier__c;
+
+                                      listOppor.add(oppNew);
+                                      insert oppNew;
+                                      opp.Opportunity_Lock__c = True;
+                                      update listOppor;
+                                      
+
+                    //Need to add if statement to only run if there is a synched quote 
+                
+                    if (opp.SyncedQuoteId != null){
+                    
+
+                    Quote newQuote = [SELECT IsSyncing, Quote_Approved__c,  Australian_Business_Number_ABN__c, Quote_VAT_Number__c,Quote_Registered_Company_Name__c, Quote_Company_Number__c, BillingCity, BillingCountry, BillingStateCode, BillingState, BillingStreet
+                                      FROM Quote WHERE opportunity.name  =: opp.name and IsSyncing = TRUE and Quote_Approved__c = TRUE LIMIT 1];
+                      
+                    if(newQuote.IsSyncing == TRUE && newQuote.Quote_Approved__c == TRUE){
+                          theAcc.VAT_Number__c = newQuote.Quote_VAT_Number__c;
+                          theAcc.Australian_Business_Number_ABN__c = newQuote.Australian_Business_Number_ABN__c ;
+                          theAcc.Company_Number__c = newQuote.Quote_Company_Number__c;
+                          theAcc.Registered_Company_Name__c = newQuote.Quote_Registered_Company_Name__c;
+                          theAcc.BillingCity = newQuote.BillingCity;
+                          theAcc.BillingCountry = newQuote.BillingCountry;
+                          //theAcc.BillingStateCode = newQuote.BillingStateCode;
+                          theAcc.BillingState = newQuote.BillingState;
+                          theAcc.BillingStreet = newQuote.BillingStreet;
+                          System.debug('@@@ 2nd Update');
+                          update theAcc;
+                          System.debug('@@@ Account : '+theAcc);
+                    }
+
+
+                    }
+                    
+                   // Opportunity aux = new Opportunity(Id = opp.Id);
+                    //aux.Opportunity_Lock__c = True;
+                    //listOppor.add(aux);
+                    //update listOppor;
+                              
+        }
+      }
+    }
+  }
+}
