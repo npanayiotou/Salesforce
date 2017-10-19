@@ -1,0 +1,1 @@
+$User.Alias + " " + TEXT( MONTH( TODAY()) ) & "/" & TEXT( DAY( TODAY()) ) + BR() + NextStep
