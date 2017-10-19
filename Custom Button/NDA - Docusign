@@ -1,0 +1,18 @@
+if('{!User.Country}' == 'United Kingdom'){
+	{!REQUIRESCRIPT("/apex/dsfs__DocuSign_JavaScript")}
+	var sourceId = DSGetPageIDFromHref();
+	var RQD=DSGetPageIDFromHref();
+	var DST='3d3a9e9b-ff82-4371-8c64-8a89447ee8a8';
+	window.location.href="/apex/dsfs__DocuSign_CreateEnvelope?DSEID=0&SourceID="+sourceId+"&DST="+DST+"&RQD="+RQD;
+} else if ('{!User.Country}' == 'United States'){
+	{!REQUIRESCRIPT("/apex/dsfs__DocuSign_JavaScript")}
+	var sourceId = DSGetPageIDFromHref();
+	var RQD=DSGetPageIDFromHref();
+	var DST='e0b8888a-98a2-48e1-9f57-cb8d6b68d689';
+	window.location.href="/apex/dsfs__DocuSign_CreateEnvelope?DSEID=0&SourceID="+sourceId+"&DST="+DST+"&RQD="+RQD;
+} else {
+	{!REQUIRESCRIPT("/apex/dsfs__DocuSign_JavaScript")}
+	var sourceId = DSGetPageIDFromHref();
+	var RQD=DSGetPageIDFromHref();
+	window.location.href="/apex/dsfs__DocuSign_CreateEnvelope?DSEID=0&SourceID="+sourceId+"&RQD="+RQD;
+}
