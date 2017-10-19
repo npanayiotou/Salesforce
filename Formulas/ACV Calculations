@@ -1,0 +1,11 @@
+IF(NOT(ISBLANK(Annual_Contract_Value_Override__c)), Annual_Contract_Value_Override__c, 
+IF(SyncedQuote.RecordType.Name = "Forecasting Quote" && NOT(ISBLANK(SyncedQuote.Annual_Contract_Value__c)), SyncedQuote.Annual_Contract_Value__c, 
+IF (OR(Owner.ProfileId = "00e24000000nJ5M", Owner.ProfileId = "00e24000000FRTH",Owner.ProfileId = "00e24000000ny8R"), (Related_Opp_Amount__c/ Contract_Length_04_17__c) * 12 , 
+IF(RecordType.Name = "Upsell", (Related_Opp_Amount__c / Contract_Length_04_17__c) * MIN(Contract_Length_04_17__c, 12), 
+IF(OR(RecordType.Name = "New Business Post Break",RecordType.Name = "Renewal Post Break"), Post_Break_ACV_04_17__c , 
+IF (NOT(ISBLANK(Break_Exit_End_Date_04_17__c)), Pre_Break_ACV_04_17__c , 
+(( 
+MIN(MAX(Contract_Length_04_17__c,1) ,12) 
+*(Related_Opp_Amount__c / MAX(Contract_Length_04_17__c,1))) 
+) 
+))))))
