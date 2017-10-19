@@ -1,0 +1,17 @@
+CASE(RecordType.Name, 
+"Standard Quote", 
+IF (Quote_Approved__c = True , "Quote Has Been Approved", 
+IF (LineItemCount = 0, "Add products - You can do this by scrolling down further down the Quote page and clicking 'Add Line Item' ", 
+IF(AND(Pricebook2Id ="01s24000004x5uV", OR(ISBLANK(Monthly_Unique_Visitors__c),Monthly_Unique_Visitors__c=0)),"Monthly Unique Visitors shpuld be greater than 0", 
+IF (IsSyncing = False,"In order to send for approval the quote must be syncing ", "You're nearly ready to submit for approval! Before you submit, please generate your Order Form via the 'Create PDF' button. (Not requied for quote approval)") 
+))), 
+"Agency Quote", 
+IF(IsSyncing = False,"In order to send for approval the quote must be syncing ", 
+IF (Quote_Approved__c = True , "Quote Has Been Approved", "You're nearly ready to submit for approval! Before you submit, please generate your Order Form via the 'Create PDF' button. (Not requied for quote approval)") 
+), 
+"Trial Quote", 
+IF (IsSyncing = False,"In order to send for approval the quote must be syncing ", 
+IF (LineItemCount = 0, "Add products - You can do this by scrolling down further down the Quote page and clicking 'Add Line Item' ", 
+IF (Quote_Approved__c = True , "Quote Has Been Approved", "You're nearly ready to submit for approval! Before you submit, please generate your Order Form via the 'Create PDF' button. (Not requied for quote approval)") 
+)), 
+"Waiting...")
