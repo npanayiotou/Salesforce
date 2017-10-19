@@ -1,0 +1,38 @@
+public class oppTriggers {
+     public static Date retDate;
+     public static Date tempDate;
+
+     //public static boolean PBFirstRun = true;
+
+     public static Date checkLeapYear(Date dDate){
+/*
+            if (Date.isLeapYear(dDate.year())){
+                tempDate = dDate.addDays(365);
+            } else {
+                tempDate = dDate.addYears(1);
+                //Minus 1 day
+            }
+                
+            retDate = tempDate;
+            return (retDate);
+     }
+*/
+
+Integer month = dDate.month();
+Integer day = dDate.day();
+
+if (month == 2 && day == 29){
+    tempDate = dDate.addYears(1);
+} else {
+    tempDate = dDate.addYears(1).addDays(-1);
+    //tempDate = dDate.addDays(-1);
+}
+
+
+
+            retDate = tempDate;
+            return (retDate);
+}
+
+     
+}
