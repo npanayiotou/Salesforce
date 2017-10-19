@@ -1,0 +1,24 @@
+var quoteApproved = {!Quote.Quote_Approved__c}; 
+
+//********* Option Declarations (Do not modify )*********//
+var RC='';var RSL='';var RSRO='';var RROS='';var CCRM='';var CCTM='';var CCNM='';var CRCL='';var CRL='';var OCO='';var DST='';var LA='';var CEM='';var CES='';var STB='';var SSB='';var SES='';var SEM='';var SRS='';var SCS ='';var RES='';
+//*************************************************//
+switch ("{!Quote.Signed_by__c}") {
+    case "Mark Ash":
+        CRL="Email~mark.ash@yieldify.com; FirstName~Mark; LastName~Ash; Role~Signer 2; RoutingOrder~1";
+	CCTM = "Signer 2~Signer";
+        break;
+    case "Matt Rees":
+        CRL="Email~matt.rees@yieldify.com; FirstName~Matt; LastName~Rees; Role~Signer 2; RoutingOrder~1";
+	CCTM = "Signer 2~Signer";
+}
+
+
+if(quoteApproved){ 
+{!REQUIRESCRIPT("/apex/dsfs__DocuSign_JavaScript")}
+var sourceId = DSGetPageIDFromHref();
+var RQD=DSGetPageIDFromHref();
+window.location.href="/apex/dsfs__DocuSign_CreateEnvelope?DSEID=0&SourceID="+sourceId+"&CCTM="+CCTM+"&CRL="+CRL+"&RQD="+RQD; 
+} else { 
+alert("Your quote has not been approved yet. \nPlease submit for approval before sending the contract.");	
+}
