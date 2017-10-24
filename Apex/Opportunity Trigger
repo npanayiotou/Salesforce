@@ -33,7 +33,11 @@ trigger OpportunityTrigger on Opportunity (before insert, before update) {
 List<Opportunity> listOppor = new List<Opportunity>();
   for(Opportunity opp : Trigger.new){
 
+//Code only runs id class PostBreakStatus class is equal to True. (Preventing the code from executing multiple times in the same instance)
     if(PostBreakStatus.PBFirstRun){
+
+//Since the record IDs are different in sandbox and production we had to code it in this way to grab the ID according to the name of the record.
+//IMPORTANT: If the names of the record types change this wont work and will need to be edited.
 
         Id NB = Schema.SObjectType.Opportunity.getRecordTypeInfosByName().get('New Business').getRecordTypeId();
         Id NBPB = Schema.SObjectType.Opportunity.getRecordTypeInfosByName().get('New Business Post Break').getRecordTypeId();
@@ -43,6 +47,8 @@ List<Opportunity> listOppor = new List<Opportunity>();
         Id PT = Schema.SObjectType.Opportunity.getRecordTypeInfosByName().get('Trial Opportunity').getRecordTypeId();
         Id QO = Schema.SObjectType.Quote.getRecordTypeInfosByName().get('Standard Quote').getRecordTypeId();
 
+//Another IF statement to ensure that the code only executed on the following record types. Additionally the stage of the records must be
+//equal to "Closed Won" anf the Opportunity_Lock__c field must be false. (Users are only allowed to edit unlocked opportunities)
 
       if(opp.RecordTypeId == NB || opp.RecordTypeId == NBPB || opp.RecordTypeId == RE || opp.RecordTypeId == REPB || opp.RecordTypeId == UP || opp.RecordTypeId == PT){
             
@@ -52,15 +58,20 @@ List<Opportunity> listOppor = new List<Opportunity>();
                     Decimal tempAmount;
                     Decimal tempAmount2;
               
+//We initiate the PostBreakStatus to false in order to stop it from re-executing.
+//Initiate the process by creating our new opportunity object.
+
                     PostBreakStatus.PBFirstRun=false;
                     Opportunity oppNew = new Opportunity();
+
+//Throughout the code we will require to push or pull field information on the related account. In order to do so we create an array of all the field we will use.
 
                      Account theAcc = [SELECT  PlatformA__c, Agency__c, Churn_Risk__c, Australian_Business_Number_ABN__c, Acc_Billing_Cycle__c,Account_Is_Sales_Tax_applicable__c,Account_Is_a_Purchase_Order_PO_required__c,Affiliate_Network__c,Amount__c, AnnualRevenue, Break_Exit_End_Date__c,
                                       Break_Exit_Start_Date__c, Website, Contract_End_Date__c, Contract_Notice_Expiration_Date__c, Contract_Start_Date__c, Current_Status__c, Custom_Type__c, Dual_Affilate__c, Opportunity_Re_engagement_Date__c,
                                       Payment_Method__c, Post_Break_ACV__c, Pre_Break_ACV__c, Annual_Contract_Value__c, VAT_Number__c,  Company_Number__c,  Registered_Company_Name__c, BillingCity, BillingCountry, BillingStateCode, BillingState, BillingStreet
                                       FROM Account WHERE id =: opp.AccountId];
                     
-
+//The first push of fields to the account object from the original opportunity.
 
                     theAcc.PlatformA__c = opp.Platform__c;
                     theAcc.Agency__c = opp.Agency__c;
@@ -88,7 +99,8 @@ List<Opportunity> listOppor = new List<Opportunity>();
                     System.debug('@@@ Test : '+theAcc);
 
                   
-                  
+//The following code will execute if the original opportunity has no break dates or its record type is falls under the Post break category.
+// If the opps falls into this then next generated opp will be a Renewal Opportunity.
 
                                   if(opp.Break_Exit_Start_Date_04_17__c == NULL || opp.RecordTypeId == NBPB || opp.RecordTypeId == REPB){
 
@@ -96,13 +108,16 @@ List<Opportunity> listOppor = new List<Opportunity>();
                                         //Opportunity oppNew = new Opportunity();
                                         System.debug('Create Renewal');
                                         oppNew.RecordTypeId = RE;
-                                        
+ 
+ //If statement for naming the newly generated Opp                                      
                                         if (opp.Name.contains('RE - ')){
                                             oppNew.Name = opp.Name;
                                         } 
                                         else {
                                             oppNew.Name = 'RE - ' + opp.Name;
                                         }
+                                        
+//Calculations required depending on the record type og the original opp.
 
                                         if(opp.RecordTypeId == NBPB || opp.RecordTypeId == REPB){
                                           tempAmount = (opp.Post_Break_Total_Sales_Price_04_17__c / opp.Post_Break_Length_Months_04_17__c) * 12;
@@ -118,6 +133,8 @@ List<Opportunity> listOppor = new List<Opportunity>();
                                            //tempAmount =  ((opp.Amount / opp.Contract_Length_04_17__c) * 12); --------- Change to just Amount
                                             //oppNew.Related_Opp_Amount__c = ((opp.Amount / opp.Contract_Length_04_17__c) * 12);
                                         }
+//Once we have all the required information we push information from he original opportunity to the newly generated one.
+//Note: These fields are only required if the newly generated opp is a Renewal
 
                                         oppNew.CloseDate = opp.Contract_End_Date_04_17__c;
                                         oppNew.Contract_Start_Date__c = opp.Contract_End_Date_04_17__c.addDays(1);
@@ -137,13 +154,16 @@ List<Opportunity> listOppor = new List<Opportunity>();
                                         //insert oppNew;
                                   }
 
+//If the original opportunity is a pre break and has break dates then it will fall in this if statement.
+
                                   if (opp.RecordTypeId != NBPB || opp.RecordTypeId != REPB){
                                   if(opp.Break_Exit_Start_Date_04_17__c != NULL && opp.Break_Exit_End_Date_04_17__c != NULL){
 
                                       //PostBreakStatus.PBFirstRun=false;
                                       //Opportunity oppNew = new Opportunity();
 
-                                                                            
+//If statement for naming the newly generated Opp     
+
                                       if (opp.RecordTypeId == NB){
                                           oppNew.RecordTypeId = NBPB;
                                         
@@ -166,7 +186,8 @@ List<Opportunity> listOppor = new List<Opportunity>();
                                          }
                                       }
 
-                                    
+//Once we have all the required information we push information from he original opportunity to the newly generated one.
+//Note: These fields are only required if the newly generated opp is a post break opp.                                   
 
                                       oppNew.Contract_Start_Date__c = opp.Contract_Start_Date__c;
                                       oppNew.Contract_End_Date_04_17__c = opp.Contract_End_Date_04_17__c;
@@ -184,7 +205,7 @@ List<Opportunity> listOppor = new List<Opportunity>();
                                 }
 
                                  
-
+//These are fields that are required no matter what the record type of the new opp is.
                                           
                                           oppNew.AccountId = opp.AccountId;
                                           oppNew.Website_URL__c = opp.Website_URL__c;
@@ -214,17 +235,18 @@ List<Opportunity> listOppor = new List<Opportunity>();
                                           oppNew.Contract_Notice_Expiration_Date__c = opp.Contract_End_Date_04_17__c.addDays(-30);
                                           oppNew.LeadSource = opp.LeadSource;
                                           oppNew.Client_Tier__c = opp.Client_Tier__c;
+                                          
+//The next 4 lines are used to Lock the original opportunity.
 
                                       listOppor.add(oppNew);
                                       insert oppNew;
                                       opp.Opportunity_Lock__c = True;
                                       update listOppor;
-                                      
+                                     
+//Used to push information from a synced quote to the related account. This only executed if the quote is syncing and it approved.
 
-                    //Need to add if statement to only run if there is a synched quote 
-                
                     if (opp.SyncedQuoteId != null){
-                    
+                  
 
                     Quote newQuote = [SELECT IsSyncing, Quote_Approved__c,  Australian_Business_Number_ABN__c, Quote_VAT_Number__c,Quote_Registered_Company_Name__c, Quote_Company_Number__c, BillingCity, BillingCountry, BillingStateCode, BillingState, BillingStreet
                                       FROM Quote WHERE opportunity.name  =: opp.name and IsSyncing = TRUE and Quote_Approved__c = TRUE LIMIT 1];
