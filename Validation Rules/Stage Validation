@@ -1,0 +1,96 @@
+
+AND(
+	$User.ProfileId  <> "00e58000000b556",
+	ISCHANGED(StageName),
+	OR(
+
+		AND(
+			ISPICKVAL(PRIORVALUE(StageName), "Lead"),
+				OR(
+					ISPICKVAL(StageName, "Facility Design"),
+					ISPICKVAL(StageName, "Credit Decision"),
+					ISPICKVAL(StageName, "Approved"),
+					ISPICKVAL(StageName, "Completion"),
+					ISPICKVAL(StageName, "Activation"),
+					ISPICKVAL(StageName, "Live")
+				)
+		),
+
+		AND(
+			ISPICKVAL(PRIORVALUE(StageName), "Qualified"),
+				OR(
+					ISPICKVAL(StageName, "Lead"),
+					ISPICKVAL(StageName, "Credit Decision"),
+					ISPICKVAL(StageName, "Approved"),
+					ISPICKVAL(StageName, "Completion"),
+					ISPICKVAL(StageName, "Activation"),
+					ISPICKVAL(StageName, "Live")
+			)
+		),
+
+		AND(
+			ISPICKVAL(PRIORVALUE(StageName), "Facility Design"),
+				OR(
+					ISPICKVAL(StageName, "Lead"),
+					ISPICKVAL(StageName, "Qualified"),
+					ISPICKVAL(StageName, "Credit Decision"),
+					ISPICKVAL(StageName, "Approved"),
+					ISPICKVAL(StageName, "Completion"),
+					ISPICKVAL(StageName, "Activation"),
+					ISPICKVAL(StageName, "Live")
+			)
+		),
+
+
+		AND(
+			ISPICKVAL(PRIORVALUE(StageName), "Credit Decision"),
+				OR(
+					ISPICKVAL(StageName, "Lead"),
+					ISPICKVAL(StageName, "Qualified"),
+					ISPICKVAL(StageName, "Facility Design"),
+					ISPICKVAL(StageName, "Completion"),
+					ISPICKVAL(StageName, "Activation"),
+					ISPICKVAL(StageName, "Live")
+				)
+		),
+
+
+		AND(
+			ISPICKVAL(PRIORVALUE(StageName), "Approved"),
+				OR(
+					ISPICKVAL(StageName, "Lead"),
+					ISPICKVAL(StageName, "Qualified"),
+					ISPICKVAL(StageName, "Facility Design"),
+					ISPICKVAL(StageName, "Credit Decision"),
+					ISPICKVAL(StageName, "Activation"),
+					ISPICKVAL(StageName, "Live")
+				)
+		),
+
+
+		AND(
+			ISPICKVAL(PRIORVALUE(StageName), "Completion"),
+				OR(
+					ISPICKVAL(StageName, "Lead"),
+					ISPICKVAL(StageName, "Qualified"),
+					ISPICKVAL(StageName, "Facility Design"),
+					ISPICKVAL(StageName, "Credit Decision"),
+					ISPICKVAL(StageName, "Approved"),
+					ISPICKVAL(StageName, "Live")
+			)
+		),
+
+		AND(
+			ISPICKVAL(PRIORVALUE(StageName), "Activation"),
+				OR(
+					ISPICKVAL(StageName, "Lead"),
+					ISPICKVAL(StageName, "Qualified"),
+					ISPICKVAL(StageName, "Facility Design"),
+					ISPICKVAL(StageName, "Credit Decision"),
+					ISPICKVAL(StageName, "Approved"),
+					ISPICKVAL(StageName, "Completion")
+				)
+		)
+
+	)
+)
