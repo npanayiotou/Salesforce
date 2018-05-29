@@ -1,0 +1,140 @@
+This is the formula that updates the Number of AML field on the Account
+=============================================================================
+IF(OR(AND(TEXT(PRIORVALUE([Contact].AML_Indicator__c)) = "0", TEXT([Contact].AML_Indicator__c) = "0"),AND(ISNEW(), TEXT([Contact].AML_Indicator__c) = "0")), [Contact].Account.Number_of_AML__c , 
+	
+	IF(OR(AND(TEXT(PRIORVALUE([Contact].AML_Indicator__c)) = "0", TEXT([Contact].AML_Indicator__c) = "1"),AND(ISNEW(), TEXT([Contact].AML_Indicator__c) = "1")), [Contact].Account.Number_of_AML__c  + 1,
+		
+		IF(AND(TEXT(PRIORVALUE([Contact].AML_Indicator__c)) = "1", TEXT([Contact].AML_Indicator__c) = "0"), [Contact].Account.Number_of_AML__c  - 1,
+			
+			IF(AND(TEXT(PRIORVALUE([Contact].AML_Indicator__c)) = "1", TEXT([Contact].AML_Indicator__c) = "1"), [Contact].Account.Number_of_AML__c,
+			[Contact].Account.Number_of_AML__c 
+))))
+
+
+This is the formula that updates the ContactComplete field on the Account
+=============================================================================
+IF(
+	OR(
+		AND(
+			PRIORVALUE([Contact].TypeCompleted__c) = 0, 
+			[Contact].TypeCompleted__c = 0
+		),
+
+		AND(
+			ISNEW(), 
+			[Contact].TypeCompleted__c = 0
+		)
+	
+	), 
+
+	[Contact].Account.ContactComplete__c  , 
+	
+	IF(
+		OR(
+			AND(
+				PRIORVALUE([Contact].TypeCompleted__c) = 0, 
+				[Contact].TypeCompleted__c = 1
+			),
+
+			AND(
+				ISNEW(), 
+				[Contact].TypeCompleted__c = 1
+			)
+		), 
+
+		[Contact].Account.ContactComplete__c + 1,
+		
+
+		IF(
+			AND(
+				(PRIORVALUE([Contact].TypeCompleted__c) = 1), 
+				([Contact].TypeCompleted__c = 0)
+			),
+			
+			[Contact].Account.ContactComplete__c - 1,
+			
+			IF(
+				AND(
+					(PRIORVALUE([Contact].TypeCompleted__c) = 1),
+					([Contact].TypeCompleted__c = 1)
+				), 
+			[Contact].Account.ContactComplete__c,
+			[Contact].Account.ContactComplete__c 
+)))) 
+
+This is the formula that updates the Number of DirSha field on the Account
+=============================================================================
+
+IF(
+	OR(
+		AND(
+			PRIORVALUE([Contact].Count_DSS__c) = 0, [Contact].Count_DSS__c = 0
+		),
+		
+		AND(
+			ISNEW(), [Contact].Count_DSS__c = 0
+		)
+	), 
+	
+	[Contact].Account.Number_of_DirSha__c , 
+	
+	IF(
+		OR(
+			AND(
+				PRIORVALUE([Contact].Count_DSS__c) = 0, [Contact].Count_DSS__c = 1
+			),
+			
+			AND(
+				ISNEW(), [Contact].Count_DSS__c = 1
+			)
+		),
+		
+		[Contact].Account.Number_of_DirSha__c  + 1,
+		
+		IF(
+			AND(
+				(PRIORVALUE([Contact].Count_DSS__c) = 1), ([Contact].Count_DSS__c = 0)
+			),
+			[Contact].Account.Number_of_DirSha__c  - 1,
+		
+			IF(
+				AND(
+					(PRIORVALUE([Contact].Count_DSS__c) = 1), ([Contact].Count_DSS__c = 1)
+				),
+			
+				[Contact].Account.Number_of_DirSha__c,
+			
+				[Contact].Account.Number_of_DirSha__c 
+			)
+		)
+	)
+)
+
+This is the formula that updates the Count PG field on the Account
+=============================================================================
+IF(
+	OR(
+		AND(PRIORVALUE([Contact].CountPG__c) = 0, [Contact].CountPG__c = 0),
+		AND(ISNEW(), [Contact].CountPG__c = 0)
+	), 
+	[Contact].Account.Count_PG__c , 
+	
+	IF(
+		OR(
+		AND(PRIORVALUE([Contact].CountPG__c ) = 0, [Contact].CountPG__c  = 1),
+		AND(ISNEW(), [Contact].CountPG__c = 1)
+		), [Contact].Account.Count_PG__c  + 1,
+			
+
+	IF(
+	AND((PRIORVALUE([Contact].CountPG__c ) = 1), ([Contact].CountPG__c  = 0)),[Contact].Account.Count_PG__c  - 1,
+				IF(AND((PRIORVALUE([Contact].CountPG__c) = 1), ([Contact].CountPG__c=1)),[Contact].Account.Count_PG__c,
+				[Contact].Account.Count_PG__c 
+	))
+)
+) 
+
+
+
+
+
